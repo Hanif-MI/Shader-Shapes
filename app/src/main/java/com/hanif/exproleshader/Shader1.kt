@@ -5,6 +5,7 @@ import android.opengl.GLES20
 import android.opengl.GLSurfaceView
 import android.opengl.Matrix
 import android.os.Bundle
+import android.os.SystemClock
 import androidx.appcompat.app.AppCompatActivity
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
@@ -39,6 +40,10 @@ class MyGLRenderer : GLSurfaceView.Renderer{
     private val vPMatrix = FloatArray(16)
     private val projectionMatrix = FloatArray(16)
     private val viewMatrix = FloatArray(16)
+
+
+    //rotation
+    private val rotationMatrix = FloatArray(16)
     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
         triangle = Triangle()
         GLES20.glClearColor(0.0f, .0f, 0.0f, 1.0f)
@@ -51,11 +56,20 @@ class MyGLRenderer : GLSurfaceView.Renderer{
         Matrix.frustumM(projectionMatrix,0,-ratio,ratio,-1f,1f,3f,7f)
     }
     override fun onDrawFrame(gl: GL10?) {
-//        triangle.draw()
+
 
         Matrix.setLookAtM(viewMatrix,0,0f,0f,3f,0f,0f,0f,0f,1.0f,0f)
         Matrix.multiplyMM(vPMatrix,0,projectionMatrix,0,viewMatrix,0)
-        square.draw(vPMatrix)
+
+        val scratch = FloatArray(16)
+
+        val time =SystemClock.uptimeMillis() % 4000L
+        val angle = 0.090f * time.toInt()
+        Matrix.setRotateM(rotationMatrix,0,angle,0f,0f,-1.0f)
+
+        Matrix.multiplyMM(scratch,0,vPMatrix,0,rotationMatrix,0)
+        triangle.draw(scratch/*vPMatrix*/)
+        square.draw(scratch)
     }
 }
 
